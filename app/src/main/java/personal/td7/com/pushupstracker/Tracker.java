@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +24,9 @@ import java.util.Date;
 public class Tracker extends AppCompatActivity {
 
     static int count = 0;
+    TextView counts;
+    FloatingActionButton fab;
+    CalendarView c;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,9 +42,9 @@ public class Tracker extends AppCompatActivity {
         Button btn = (Button) v.findViewById(R.id.showStats);
 
 
-        final TextView counts = (TextView) findViewById(R.id.displayCount);
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        CalendarView c = (CalendarView) findViewById(R.id.cal);
+        counts = (TextView) findViewById(R.id.displayCount);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        c = (CalendarView) findViewById(R.id.cal);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -51,25 +55,7 @@ public class Tracker extends AppCompatActivity {
                 d.findViewById(R.id.reg).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TextView t = (TextView) d.findViewById(R.id.count);
-                        count = Integer.parseInt(t.getText()+"");
-
-                        SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
-
-                        Date date = new Date();
-                        String tableName = getTableName(date.getMonth()+1);
-                        db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
-
-                        if(count>10) {
-                            Snackbar.make(view, "Keep it up!", Snackbar.LENGTH_LONG)
-                                    .setAction("Keep it up!", null).show();
-                        }
-                        else {
-                            Snackbar.make(view, "Dont lose track! Keep doing push ups!!",Snackbar.LENGTH_LONG)
-                                    .setAction("Dont lose track! Keep doing push ups!!",null).show();
-                        }
-                        d.hide();
-                        counts.setText(count+"");
+                        new TaskHandler().execute(1,view,d);
                     }
                 });
                 d.show();
@@ -82,27 +68,7 @@ public class Tracker extends AppCompatActivity {
         c.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                try {
-                    Date date = new Date();
-                    if (dayOfMonth != date.getDate()) {
-                        fab.setVisibility(View.INVISIBLE);
-                    } else fab.setVisibility(View.VISIBLE);
-                    SQLiteDatabase db = openOrCreateDatabase("data", MODE_PRIVATE, null);
-
-                    String tableName = getTableName(month + 1);
-                    Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
-                    res.moveToFirst();
-                    count = 0;
-                    if (!res.isNull(1)) {
-                        count = Integer.parseInt(res.getString(1));
-                    }
-                    counts.setText(count + "");
-                    res.close();
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    counts.setText(0+"");
-                }
+                new TaskHandler().execute(0,month,dayOfMonth);
             }
         });
 
@@ -237,18 +203,7 @@ public class Tracker extends AppCompatActivity {
     }
 
     private void initDBCreation(){
-        SQLiteDatabase trackdb = openOrCreateDatabase("data",MODE_PRIVATE,null);
-
-        trackdb.execSQL("CREATE TABLE IF NOT EXISTS January17(Day int, Count int NOT NULL)");
-        for(int i=1;i<31;i++){
-            trackdb.execSQL("INSERT INTO January17 VALUES("+i+",0)");
-        }
-
-        Cursor res = trackdb.rawQuery("SELECT * FROM January17 where Day = 1",null);
-        res.moveToFirst();
-
-        System.out.println("Jan 1: "+res.getString(1));
-        res.close();
+        new TaskHandler().execute(99);
     }
 
     @Override
@@ -271,5 +226,115 @@ public class Tracker extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class TaskHandler extends AsyncTask{
+        @Override
+        protected Object doInBackground(Object[] params) {
+            int m = (int) params[0];
+
+            //On Date change listener task handling here
+            if(m==0){
+                try {
+                    int month = (int) params[1];
+                    int dayOfMonth = (int) params[2];
+                    Date date = new Date();
+                    if (dayOfMonth != date.getDate()) {
+                        publishProgress(0,1);
+                    } else publishProgress(0,2);
+                    SQLiteDatabase db = openOrCreateDatabase("data", MODE_PRIVATE, null);
+
+                    String tableName = getTableName(month + 1);
+                    Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
+                    res.moveToFirst();
+                    count = 0;
+                    if (!res.isNull(1)) {
+                        count = Integer.parseInt(res.getString(1));
+                    }
+                    publishProgress(0,3);
+                    res.close();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    publishProgress(0,4);
+                }
+            }
+
+            //Task handling for fab press
+            else if(m==1){
+                Dialog d = (Dialog) params[2];
+                View view = (View) params[1];
+                TextView t = (TextView) d.findViewById(R.id.count);
+                publishProgress(1,1,t);
+
+                SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
+
+                Date date = new Date();
+                String tableName = getTableName(date.getMonth()+1);
+                db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
+
+                if(count>10) {
+                    Snackbar.make(view, "Keep it up!", Snackbar.LENGTH_LONG)
+                            .setAction("Keep it up!", null).show();
+                }
+                else {
+                    Snackbar.make(view, "Dont lose track! Keep doing push ups!!",Snackbar.LENGTH_LONG)
+                            .setAction("Dont lose track! Keep doing push ups!!",null).show();
+                }
+                d.hide();
+                publishProgress(1,2);
+            }
+
+            //Initial DB Creation task handling
+            else if(m==99){
+                SQLiteDatabase trackdb = openOrCreateDatabase("data",MODE_PRIVATE,null);
+
+                trackdb.execSQL("CREATE TABLE IF NOT EXISTS January17(Day int, Count int NOT NULL)");
+                for(int i=1;i<31;i++){
+                    trackdb.execSQL("INSERT INTO January17 VALUES("+i+",0)");
+                }
+
+                Cursor res = trackdb.rawQuery("SELECT * FROM January17 where Day = 1",null);
+                res.moveToFirst();
+
+                System.out.println("Jan 1: "+res.getString(1));
+                res.close();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Object[] values) {
+            int m = (int)values[0];
+            if(m==0){
+                int task = (int) values[1];
+                switch (task){
+                    case 1:
+                        fab.setVisibility(View.INVISIBLE);
+                        break;
+                    case 2:
+                        fab.setVisibility(View.VISIBLE);
+                        break;
+                    case 3:
+                        counts.setText(count + "");
+                        break;
+                    case 4:
+                        counts.setText(0+"");
+                        break;
+                }
+            }
+            else if(m==1){
+                int task = (int) values[1];
+                switch (task){
+                    case 1:
+                        TextView t = (TextView) values[2];
+                        count = Integer.parseInt(t.getText()+"");
+                        break;
+                    case 2:
+                        counts.setText(count+"");
+                        break;
+                }
+            }
+        }
     }
 }
