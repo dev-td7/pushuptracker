@@ -37,9 +37,9 @@ public class Tracker extends AppCompatActivity {
             createNewMonthsTable();
         }
 
-        View v = findViewById(R.id.mainContent);
+        /*View v = findViewById(R.id.mainContent);
 
-        Button btn = (Button) v.findViewById(R.id.showStats);
+        Button btn = (Button) v.findViewById(R.id.showStats);*/
 
 
         counts = (TextView) findViewById(R.id.displayCount);
@@ -48,8 +48,6 @@ public class Tracker extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
                 final Dialog d = new Dialog(Tracker.this);
                 d.setContentView(R.layout.edit_count);
                 d.findViewById(R.id.reg).setOnClickListener(new View.OnClickListener() {
@@ -72,7 +70,7 @@ public class Tracker extends AppCompatActivity {
             }
         });
 
-        System.out.println("Set onclick for btn");
+        /*System.out.println("Set onclick for btn");
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,7 +78,7 @@ public class Tracker extends AppCompatActivity {
                 Intent in = new Intent(getApplicationContext(),Stats.class);
                 startActivity(in);
             }
-        });
+        });*/
 
         FloatingActionButton f = (FloatingActionButton) findViewById(R.id.fab_stat);
         f.setOnClickListener(new View.OnClickListener() {
@@ -273,15 +271,8 @@ public class Tracker extends AppCompatActivity {
                 String tableName = getTableName(date.getMonth()+1);
                 db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
 
-                if(count>10) {
-                    Snackbar.make(view, "Keep it up!", Snackbar.LENGTH_LONG)
-                            .setAction("Keep it up!", null).show();
-                }
-                else {
-                    Snackbar.make(view, "Dont lose track! Keep doing push ups!!",Snackbar.LENGTH_LONG)
-                            .setAction("Dont lose track! Keep doing push ups!!",null).show();
-                }
-                d.hide();
+                publishProgress(1,3,view);
+                publishProgress(1,4,d);
                 publishProgress(1,2);
             }
 
@@ -333,6 +324,20 @@ public class Tracker extends AppCompatActivity {
                     case 2:
                         counts.setText(count+"");
                         break;
+                    case 3:
+                        View view = (View) values[2];
+                        if(count>10) {
+                            Snackbar.make(view, "Keep it up!", Snackbar.LENGTH_LONG)
+                                    .setAction("Keep it up!", null).show();
+                        }
+                        else {
+                            Snackbar.make(view, "Dont lose track! Keep doing push ups!!",Snackbar.LENGTH_LONG)
+                                    .setAction("Dont lose track! Keep doing push ups!!",null).show();
+                        }
+                        break;
+                    case 4:
+                        Dialog d = (Dialog) values[2];
+                        d.hide();
                 }
             }
         }
