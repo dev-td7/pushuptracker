@@ -37,15 +37,6 @@ public class Tracker extends AppCompatActivity {
 
         Button btn = (Button) v.findViewById(R.id.showStats);
 
-        System.out.println("Set onclick for btn");
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                System.out.println("Pressed");
-                Intent in = new Intent(getApplicationContext(),Stats.class);
-                startActivity(in);
-            }
-        });
 
         final TextView counts = (TextView) findViewById(R.id.displayCount);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -112,6 +103,26 @@ public class Tracker extends AppCompatActivity {
                     e.printStackTrace();
                     counts.setText(0+"");
                 }
+            }
+        });
+
+        System.out.println("Set onclick for btn");
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("Pressed");
+                Intent in = new Intent(getApplicationContext(),Stats.class);
+                startActivity(in);
+            }
+        });
+
+        FloatingActionButton f = (FloatingActionButton) findViewById(R.id.fab_stat);
+        f.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("Pressed");
+                Intent in = new Intent(getApplicationContext(),Stats.class);
+                startActivity(in);
             }
         });
 
