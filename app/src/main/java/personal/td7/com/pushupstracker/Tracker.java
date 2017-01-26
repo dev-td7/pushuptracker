@@ -37,6 +37,7 @@ public class Tracker extends AppCompatActivity {
 
         Button btn = (Button) v.findViewById(R.id.showStats);
 
+        System.out.println("Set onclick for btn");
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
