@@ -32,6 +32,8 @@ public class Tracker extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tracker);
 
+        new TaskHandler().execute(98);
+
         Date date = new Date();
         if(date.getDate() == 1){
             createNewMonthsTable();
@@ -241,7 +243,13 @@ public class Tracker extends AppCompatActivity {
 
                 Date date = new Date();
                 String tableName = getTableName(date.getMonth()+1);
-                db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
+                try {
+                    db.execSQL("update " + tableName + " set Count = ? where Day = ?", new String[]{count + "", date.getDate() + ""});
+                }
+                catch (Exception e){
+                    createNewMonthsTable();
+                    db.execSQL("update " + tableName + " set Count = ? where Day = ?", new String[]{count + "", date.getDate() + ""});
+                }
 
                 publishProgress(1,3,view);
                 publishProgress(1,4,d);
@@ -252,20 +260,25 @@ public class Tracker extends AppCompatActivity {
                 publishProgress(2);
             }
 
+            else if(m==98){
+                try {
+                    SQLiteDatabase db = openOrCreateDatabase("data", MODE_PRIVATE, null);
+                }
+                catch(Exception e){
+                    initDBCreation();
+                }
+            }
+
             //Initial DB Creation task handling
             else if(m==99){
                 SQLiteDatabase trackdb = openOrCreateDatabase("data",MODE_PRIVATE,null);
 
-                trackdb.execSQL("CREATE TABLE IF NOT EXISTS January17(Day int, Count int NOT NULL)");
+                Date date = new Date();
+                String tableName = getTableName(date.getMonth()+1);
+                trackdb.execSQL("CREATE TABLE IF NOT EXISTS "+tableName+"(Day int, Count int NOT NULL)");
                 for(int i=1;i<31;i++){
-                    trackdb.execSQL("INSERT INTO January17 VALUES("+i+",0)");
+                    trackdb.execSQL("INSERT INTO "+tableName+" VALUES("+i+",0)");
                 }
-
-                Cursor res = trackdb.rawQuery("SELECT * FROM January17 where Day = 1",null);
-                res.moveToFirst();
-
-                System.out.println("Jan 1: "+res.getString(1));
-                res.close();
             }
             return null;
         }
