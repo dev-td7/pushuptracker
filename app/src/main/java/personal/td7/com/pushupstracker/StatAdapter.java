@@ -17,7 +17,9 @@ public class StatAdapter extends ArrayAdapter {
     Vector<Stats.Data> data;
 
     StatAdapter(Context c,int layout, Vector<Stats.Data> data){
-        super(c,layout);
+        super(c,layout,data);
+        this.c = c;
+        this.layout = layout;
         this.data = data;
     }
 

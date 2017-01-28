@@ -37,6 +37,7 @@ public class Tracker extends AppCompatActivity {
             createNewMonthsTable();
         }
 
+
         /*View v = findViewById(R.id.mainContent);
 
         Button btn = (Button) v.findViewById(R.id.showStats);*/
@@ -63,6 +64,7 @@ public class Tracker extends AppCompatActivity {
         count = 0;
         counts.setText(count+"");
 
+        new TaskHandler().execute(0,date.getMonth(),date.getDate());
         c.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
@@ -70,18 +72,9 @@ public class Tracker extends AppCompatActivity {
             }
         });
 
-        /*System.out.println("Set onclick for btn");
+        Button btn = (Button) findViewById(R.id.showStats);
+        System.out.println("Set onclick for btn");
         btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                System.out.println("Pressed");
-                Intent in = new Intent(getApplicationContext(),Stats.class);
-                startActivity(in);
-            }
-        });*/
-
-        FloatingActionButton f = (FloatingActionButton) findViewById(R.id.fab_stat);
-        f.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 System.out.println("Pressed");
@@ -204,29 +197,8 @@ public class Tracker extends AppCompatActivity {
         new TaskHandler().execute(99);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_tracker, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     private class TaskHandler extends AsyncTask{
+
         @Override
         protected Object doInBackground(Object[] params) {
             int m = (int) params[0];
@@ -276,6 +248,10 @@ public class Tracker extends AppCompatActivity {
                 publishProgress(1,2);
             }
 
+            else if(m==2){
+                publishProgress(2);
+            }
+
             //Initial DB Creation task handling
             else if(m==99){
                 SQLiteDatabase trackdb = openOrCreateDatabase("data",MODE_PRIVATE,null);
@@ -293,7 +269,6 @@ public class Tracker extends AppCompatActivity {
             }
             return null;
         }
-
         @Override
         protected void onProgressUpdate(Object[] values) {
             int m = (int)values[0];
@@ -340,6 +315,33 @@ public class Tracker extends AppCompatActivity {
                         d.hide();
                 }
             }
+
+            else if(m==2){
+                System.out.println("Pressed");
+                Intent in = new Intent(getApplicationContext(),Stats.class);
+                startActivity(in);
+            }
         }
+
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_tracker, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

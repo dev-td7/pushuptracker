@@ -17,6 +17,7 @@
     <style name="TrackTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@color/colorStatusBar</item>
     </style>
 
     <style name="TrackTheme.ActionBar">

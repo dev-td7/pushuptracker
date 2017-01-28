@@ -1,5 +1,4 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -21,8 +20,7 @@
         android:layout_weight="4.5"
         android:background="@color/colorPrimary"
         android:textColor="@android:color/black"
-        android:text="Show this week's statistics  -->"
-        android:enabled="false"
+        android:text="@string/statbtnstr"
         android:textSize="18sp"
         android:id="@+id/showStats"/>
     <LinearLayout
