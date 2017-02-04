@@ -53,12 +53,6 @@ public class Stats extends AppCompatActivity {
         protected Object doInBackground(Object[] params) {
             Date thisWeek = new Date();
             //Date thisWeek = new Date(2017,1,2);
-
-                    db.execSQL("CREATE TABLE IF NOT EXISTS February17(Day int, Count int NOT NULL)");
-                    for(int i=1;i<31;i++){
-                        db.execSQL("INSERT INTO February17 VALUES("+i+",0)");
-                    }
-
             int today = thisWeek.getDay();
             int startDate = thisWeek.getDate() - today;
             int lastDate = thisWeek.getDate();
@@ -85,6 +79,7 @@ public class Stats extends AppCompatActivity {
                     stats.moveToNext();
                     publishProgress(new Data(day,count),0);
                 }
+                today++;
                 weekAvg = (weekAvg/today);
                 publishProgress(weekAvg,1);
                 publishProgress(0,2);
@@ -108,11 +103,13 @@ public class Stats extends AppCompatActivity {
                 System.out.println("Final start date: "+startDate);
 
                 //Query for prev month
-                stats = db.rawQuery("select * from " + tableName + " where Day <= " + offset + " and Day >= " + startDate, null);
+                stats = db.rawQuery("select * from " + tableName + " where Day >= " + startDate, null);
                 stats.moveToFirst();
                 double weekAvg = 0;
                 int i;
+                System.out.println("Current state, offset="+offset+" startdate="+startDate+" tablename="+tableName);
                 for(i = 0;i<=(offset - startDate);i++){
+                    System.out.println("\tIteration "+(i+1));
                     String day = "";
                     switch(i){
                         case 0: day = "Sunday"; break;
@@ -126,13 +123,17 @@ public class Stats extends AppCompatActivity {
                     int count = Integer.parseInt(stats.getString(1));
                     System.out.println("1st Listing "+i+": "+count);
                     weekAvg += count;
-                    stats.moveToNext();
                     publishProgress(new Data(day,count),0);
+                    if(i==(offset-startDate))
+                        break;
+                    stats.moveToNext();
                 }
 
+                i++;
                 //Query for current Month
                 if(month == 12) month = 0;
                 tableName = Tracker.getTableName(++month);
+                System.out.println("2nd listing table="+tableName);
                 stats = db.rawQuery("select * from " + tableName + " where Day <= " + thisWeek.getDate(), null);
                 stats.moveToFirst();
                 for(;i<=today;i++){
@@ -149,8 +150,9 @@ public class Stats extends AppCompatActivity {
                     int count = Integer.parseInt(stats.getString(1));
                     System.out.println("2nd Listing "+i+": "+count);
                     weekAvg += count;
-                    stats.moveToNext();
                     publishProgress(new Data(day,count),0);
+                    if(i==today) break;
+                    stats.moveToNext();
                 }
                 weekAvg = (weekAvg/today);
                 publishProgress(weekAvg,1);

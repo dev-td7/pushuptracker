@@ -9,15 +9,12 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.util.Date;
 
@@ -27,23 +24,16 @@ public class Tracker extends AppCompatActivity {
     TextView counts;
     FloatingActionButton fab;
     CalendarView c;
+    Date dt;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tracker);
 
-        new TaskHandler().execute(98);
-
         Date date = new Date();
         if(date.getDate() == 1){
             createNewMonthsTable();
         }
-
-
-        /*View v = findViewById(R.id.mainContent);
-
-        Button btn = (Button) v.findViewById(R.id.showStats);*/
-
 
         counts = (TextView) findViewById(R.id.displayCount);
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -65,12 +55,13 @@ public class Tracker extends AppCompatActivity {
 
         count = 0;
         counts.setText(count+"");
+        new TaskHandler().execute(0,date.getMonth(),date.getDate(),date.getYear());
 
         new TaskHandler().execute(0,date.getMonth(),date.getDate());
         c.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                new TaskHandler().execute(0,month,dayOfMonth);
+                new TaskHandler().execute(0,month,dayOfMonth,year);
             }
         });
 
@@ -137,65 +128,6 @@ public class Tracker extends AppCompatActivity {
     }
 
     private void createNewMonthsTable(){
-        SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
-        Date today = new Date();
-        int monthno = today.getMonth();
-        String tableName = today.getYear()+"";
-        int maxdays = 31;
-        switch (monthno){
-            case 1:
-                tableName = "January"+tableName;
-                break;
-            case 2:
-                boolean isLeapYear = false;
-                int yr = Integer.parseInt(tableName);
-                if(yr%4==0) isLeapYear = true;
-                tableName = "February"+tableName;
-                maxdays = 28;
-                if(isLeapYear) maxdays++;
-                break;
-            case 3:
-                tableName = "March"+tableName;
-                break;
-            case 4:
-                tableName = "April"+tableName;
-                maxdays = 30;
-                break;
-            case 5:
-                tableName = "May"+tableName;
-                break;
-            case 6:
-                tableName = "June"+tableName;
-                maxdays = 30;
-                break;
-            case 7:
-                tableName = "July"+tableName;
-                break;
-            case 8:
-                tableName = "August"+tableName;
-                break;
-            case 9:
-                tableName = "September"+tableName;
-                maxdays = 30;
-                break;
-            case 10:
-                tableName = "October"+tableName;
-                break;
-            case 11:
-                tableName = "November"+tableName;
-                maxdays = 30;
-                break;
-            case 12:
-                tableName = "December"+tableName;
-                break;
-        }
-        db.execSQL("CREATE TABLE IF NOT EXISTS "+tableName+"(Day int, Count int NOT NULL)");
-        for(int i=1;i<maxdays;i++){
-            db.execSQL("INSERT INTO "+tableName+" VALUES("+i+",0)");
-        }
-    }
-
-    private void initDBCreation(){
         new TaskHandler().execute(99);
     }
 
@@ -210,21 +142,46 @@ public class Tracker extends AppCompatActivity {
                 try {
                     int month = (int) params[1];
                     int dayOfMonth = (int) params[2];
+                    int yr = (int) params[3];
                     Date date = new Date();
-                    if (dayOfMonth != date.getDate()) {
+                    /*if (dayOfMonth != date.getDate()) {
                         publishProgress(0,1);
-                    } else publishProgress(0,2);
-                    SQLiteDatabase db = openOrCreateDatabase("data", MODE_PRIVATE, null);
+                    } else publishProgress(0,2);*/
 
-                    String tableName = getTableName(month + 1);
-                    Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
-                    res.moveToFirst();
-                    count = 0;
-                    if (!res.isNull(1)) {
-                        count = Integer.parseInt(res.getString(1));
+                    date.setYear(yr);
+                    date.setMonth(month);
+                    date.setDate(dayOfMonth);
+
+                    System.out.println("Setting for "+date.getDate()+"/"+month);
+                    dt = date;
+
+                    Date today = new Date();
+                    if(today.compareTo(dt) == -1){
+                        System.out.println("\t\n\nTrying to see future......");
+                        publishProgress(0,4);
+                        return null;
                     }
-                    publishProgress(0,3);
-                    res.close();
+
+                    SQLiteDatabase db;
+                    db = openOrCreateDatabase("data", MODE_PRIVATE, null);
+                    String tableName = getTableName(month + 1);
+                    try {
+                        Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
+                    }
+                    catch (Exception e){
+                        System.out.println("Creating table...");
+                        createNewMonthsTable();
+                    }
+                    finally {
+                        Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
+                        res.moveToFirst();
+                        count = 0;
+                        if (!res.isNull(1)) {
+                            count = Integer.parseInt(res.getString(1));
+                        }
+                        publishProgress(0, 3);
+                        res.close();
+                    }
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -232,7 +189,7 @@ public class Tracker extends AppCompatActivity {
                 }
             }
 
-            //Task handling for fab press
+            //Task handling for register button press
             else if(m==1){
                 Dialog d = (Dialog) params[2];
                 View view = (View) params[1];
@@ -241,15 +198,22 @@ public class Tracker extends AppCompatActivity {
 
                 SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
 
-                Date date = new Date();
+                Date date = dt;
+
+                Date today = new Date();
+
+                if(today.compareTo(dt) == -1){
+                    //Future setting??
+                    count = 0;
+                    publishProgress(1,2);
+                    publishProgress(1,5,view);
+                    publishProgress(1,4,d);
+                    return null;
+                }
+
+                System.out.println(date.getDate());
                 String tableName = getTableName(date.getMonth()+1);
-                try {
-                    db.execSQL("update " + tableName + " set Count = ? where Day = ?", new String[]{count + "", date.getDate() + ""});
-                }
-                catch (Exception e){
-                    createNewMonthsTable();
-                    db.execSQL("update " + tableName + " set Count = ? where Day = ?", new String[]{count + "", date.getDate() + ""});
-                }
+                db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
 
                 publishProgress(1,3,view);
                 publishProgress(1,4,d);
@@ -260,24 +224,65 @@ public class Tracker extends AppCompatActivity {
                 publishProgress(2);
             }
 
-            else if(m==98){
-                try {
-                    SQLiteDatabase db = openOrCreateDatabase("data", MODE_PRIVATE, null);
-                }
-                catch(Exception e){
-                    initDBCreation();
-                }
-            }
-
-            //Initial DB Creation task handling
+            //If database/new month's table not created
             else if(m==99){
-                SQLiteDatabase trackdb = openOrCreateDatabase("data",MODE_PRIVATE,null);
-
-                Date date = new Date();
-                String tableName = getTableName(date.getMonth()+1);
-                trackdb.execSQL("CREATE TABLE IF NOT EXISTS "+tableName+"(Day int, Count int NOT NULL)");
-                for(int i=1;i<31;i++){
-                    trackdb.execSQL("INSERT INTO "+tableName+" VALUES("+i+",0)");
+                SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
+                Date today = dt;
+                int monthno = today.getMonth()+1;
+                String tableName = today.getYear()+"";
+                tableName = tableName.substring(2);
+                int maxdays = 31;
+                switch (monthno){
+                    case 1:
+                        tableName = "January"+tableName;
+                        break;
+                    case 2:
+                        boolean isLeapYear = false;
+                        int yr = Integer.parseInt(tableName);
+                        if(yr%4==0) isLeapYear = true;
+                        tableName = "February"+tableName;
+                        maxdays = 28;
+                        if(isLeapYear) maxdays++;
+                        break;
+                    case 3:
+                        tableName = "March"+tableName;
+                        break;
+                    case 4:
+                        tableName = "April"+tableName;
+                        maxdays = 30;
+                        break;
+                    case 5:
+                        tableName = "May"+tableName;
+                        break;
+                    case 6:
+                        tableName = "June"+tableName;
+                        maxdays = 30;
+                        break;
+                    case 7:
+                        tableName = "July"+tableName;
+                        break;
+                    case 8:
+                        tableName = "August"+tableName;
+                        break;
+                    case 9:
+                        tableName = "September"+tableName;
+                        maxdays = 30;
+                        break;
+                    case 10:
+                        tableName = "October"+tableName;
+                        break;
+                    case 11:
+                        tableName = "November"+tableName;
+                        maxdays = 30;
+                        break;
+                    case 12:
+                        tableName = "December"+tableName;
+                        break;
+                }
+                System.err.println(tableName+" with "+maxdays+" days");
+                db.execSQL("CREATE TABLE IF NOT EXISTS "+tableName+"(Day int, Count int NOT NULL)");
+                for(int i=1;i<=maxdays;i++){
+                    db.execSQL("INSERT INTO "+tableName+" VALUES("+i+",0)");
                 }
             }
             return null;
@@ -288,12 +293,12 @@ public class Tracker extends AppCompatActivity {
             if(m==0){
                 int task = (int) values[1];
                 switch (task){
-                    case 1:
+                    /*case 1:
                         fab.setVisibility(View.INVISIBLE);
                         break;
                     case 2:
                         fab.setVisibility(View.VISIBLE);
-                        break;
+                        break;*/
                     case 3:
                         counts.setText(count + "");
                         break;
@@ -307,7 +312,9 @@ public class Tracker extends AppCompatActivity {
                 switch (task){
                     case 1:
                         TextView t = (TextView) values[2];
-                        count = Integer.parseInt(t.getText()+"");
+                        String str = t.getText()+"";
+                        if(str.equals("")) count = 0;
+                        else count = (int) Double.parseDouble(str);
                         break;
                     case 2:
                         counts.setText(count+"");
@@ -326,6 +333,11 @@ public class Tracker extends AppCompatActivity {
                     case 4:
                         Dialog d = (Dialog) values[2];
                         d.hide();
+                        break;
+                    case 5:
+                        View v = (View) values[2];
+                        Snackbar.make(v, "Is your device time proper? Because time machine is not invented yet!",Snackbar.LENGTH_LONG)
+                                .setAction("",null).show();
                 }
             }
 
