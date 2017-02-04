@@ -4,17 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/countColor"
-    android:paddingTop="0dp"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
-    android:paddingBottom="10dp">
+    android:paddingTop="20dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="20dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:text="Register today's count"
-        android:background="@color/colorPrimary"
-        android:textColor="@android:color/black"
+        android:background="@color/countColor"
+        android:textColor="@android:color/white"
         android:layout_marginBottom="10dp"
         android:gravity="center"
         android:textSize="20sp"/>
@@ -29,7 +29,8 @@
         android:textColor="@android:color/black"
         android:textSize="20sp"
         android:ems="10"
-        android:id="@+id/count"/>
+        android:id="@+id/count"
+        android:cursorVisible="true" />
 
     <Button
         android:layout_width="match_parent"

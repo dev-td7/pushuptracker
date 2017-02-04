@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.Date;
@@ -46,6 +47,8 @@ public class Tracker extends AppCompatActivity {
                 d.findViewById(R.id.reg).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        EditText t = (EditText) d.findViewById(R.id.count);
+                        t.setCursorVisible(true);
                         new TaskHandler().execute(1,view,d);
                     }
                 });
@@ -193,7 +196,7 @@ public class Tracker extends AppCompatActivity {
             else if(m==1){
                 Dialog d = (Dialog) params[2];
                 View view = (View) params[1];
-                TextView t = (TextView) d.findViewById(R.id.count);
+                EditText t = (EditText) d.findViewById(R.id.count);
                 publishProgress(1,1,t);
 
                 SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
@@ -311,7 +314,7 @@ public class Tracker extends AppCompatActivity {
                 int task = (int) values[1];
                 switch (task){
                     case 1:
-                        TextView t = (TextView) values[2];
+                        EditText t = (EditText) values[2];
                         String str = t.getText()+"";
                         if(str.equals("")) count = 0;
                         else count = (int) Double.parseDouble(str);
