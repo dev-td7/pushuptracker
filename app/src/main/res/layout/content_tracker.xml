@@ -2,27 +2,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/countColor"
-    android:weightSum="10">
+    android:background="@drawable/backpic"
+    android:weightSum="10"
+    android:fitsSystemWindows="true">
 
     <CalendarView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1.5"
         android:id="@+id/cal"
-        android:background="@color/colorPrimary"
+        android:background="#11000000"
         android:dateTextAppearance="@android:style/TextAppearance.Material.Large.Inverse"
+        android:weekDayTextAppearance="@android:style/TextAppearance.Material.Title"
         />
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="4.5"
-        android:background="@color/colorPrimary"
-        android:textColor="@android:color/black"
-        android:text="@string/statbtnstr"
-        android:textSize="18sp"
-        android:id="@+id/showStats"/>
+        android:weightSum="2">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#BC000000"
+            android:textColor="@android:color/white"
+            android:text="Weekly stats"
+            android:textSize="18sp"
+            android:id="@+id/showStats"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#BC000000"
+            android:textColor="@android:color/white"
+            android:text="Monthly stats"
+            android:textSize="18sp"
+            android:id="@+id/showStats_monthly"/>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -35,16 +54,15 @@
             android:layout_width="80dp"
             android:layout_height="match_parent"
             android:layout_weight="9.8"
-            android:src="@mipmap/pushup"/>
+            android:src="@mipmap/ic_launcher"/>
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="10"
             android:textSize="50sp"
             android:textColor="@android:color/white"
-            android:background="@color/countColor"
             android:id="@+id/displayCount"
             />
     </LinearLayout>

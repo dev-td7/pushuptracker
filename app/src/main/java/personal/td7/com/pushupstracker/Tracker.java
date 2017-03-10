@@ -4,11 +4,15 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,7 +21,9 @@ import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class Tracker extends AppCompatActivity {
 
@@ -25,14 +31,18 @@ public class Tracker extends AppCompatActivity {
     TextView counts;
     FloatingActionButton fab;
     CalendarView c;
-    Date dt;
+    static Calendar dt = Calendar.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tracker);
 
-        Date date = new Date();
-        if(date.getDate() == 1){
+        Calendar date = Calendar.getInstance();
+        /*String y = date.getYear()+"";
+        y = "20" + y.substring(1);
+        date.setYear(Integer.parseInt(y));*/
+        if(date.get(Calendar.DATE) == 1){
+            dt = date;
             createNewMonthsTable();
         }
 
@@ -52,43 +62,55 @@ public class Tracker extends AppCompatActivity {
                         new TaskHandler().execute(1,view,d);
                     }
                 });
+                Drawable dr = new ColorDrawable(Color.WHITE);
+                dr.setAlpha(140);
+                d.getWindow().setBackgroundDrawable(dr);
                 d.show();
             }
         });
 
         count = 0;
         counts.setText(count+"");
-        new TaskHandler().execute(0,date.getMonth(),date.getDate(),date.getYear());
+        new TaskHandler().execute(0,date.getTime());
 
-        new TaskHandler().execute(0,date.getMonth(),date.getDate());
+        //new TaskHandler().execute(0,date.getMonth(),date.getDate());
         c.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                new TaskHandler().execute(0,month,dayOfMonth,year);
+                Log.d("Calendar selection",year+" "+month+" "+dayOfMonth);
+                new TaskHandler().execute(0,new Date(c.getDate()));
             }
         });
 
         Button btn = (Button) findViewById(R.id.showStats);
-        System.out.println("Set onclick for btn");
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("Pressed");
                 Intent in = new Intent(getApplicationContext(),Stats.class);
                 startActivity(in);
             }
         });
 
-        //initDBCreation();
+        btn = (Button) findViewById(R.id.showStats_monthly);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent in = new Intent(getApplicationContext(),Stats_Monthly.class);
+                startActivity(in);
+            }
+        });
+
+        //startService(new Intent(this,NotifierService.class));
 
     }
 
     static String getTableName(int m){
-        Date today = new Date();
-        String tableName = today.getYear()+"";
-        tableName = tableName.substring(1);
+        Calendar today = dt;
+        int year = today.get(Calendar.YEAR);
+        String tableName = year+"";
+        tableName = tableName.substring(2);
         int monthno = m;
-        System.out.println(tableName+" "+today.getYear()+" "+monthno);
+        Log.d("Get table name",tableName+" "+year+" "+monthno);
         switch (monthno){
             case 1:
                 tableName = "January"+tableName;
@@ -143,24 +165,24 @@ public class Tracker extends AppCompatActivity {
             //On Date change listener task handling here
             if(m==0){
                 try {
-                    int month = (int) params[1];
-                    int dayOfMonth = (int) params[2];
-                    int yr = (int) params[3];
-                    Date date = new Date();
-                    /*if (dayOfMonth != date.getDate()) {
-                        publishProgress(0,1);
-                    } else publishProgress(0,2);*/
+                    Calendar date = Calendar.getInstance();
+                    date.setTime((Date)params[1]);
+                    int yr = date.get(Calendar.YEAR);
+                    int month = date.get(Calendar.MONTH);
+                    int dayOfMonth = date.get(Calendar.DATE);
+                    int dat = date.get(Calendar.DATE),mon = date.get(Calendar.MONTH),year = date.get(Calendar.YEAR),day = date.get(Calendar.DAY_OF_WEEK);
+                    Log.d("dt updation before",date.get(Calendar.YEAR)+" "+date.get(Calendar.MONTH)+" "+date.get(Calendar.DATE)+" & Day = "+date.get(Calendar.DAY_OF_WEEK));
 
-                    date.setYear(yr);
-                    date.setMonth(month);
-                    date.setDate(dayOfMonth);
+                    System.out.println("Setting for "+dat+"/"+mon+"/"+year);
+                    dt.setTime(date.getTime());
+                    Log.d("dt updation after",dt.get(Calendar.YEAR)+" "+dt.get(Calendar.MONTH)+" "+dt.get(Calendar.DATE)+" & Day = "+dt.get(Calendar.DAY_OF_WEEK));
 
-                    System.out.println("Setting for "+date.getDate()+"/"+month);
-                    dt = date;
-
-                    Date today = new Date();
-                    if(today.compareTo(dt) == -1){
+                    Calendar today = Calendar.getInstance();
+                    //String y = today.getYear() + "";
+                    //today.setYear(Integer.parseInt(20 + y.substring(1)));
+                    if(today.compareTo(date) < 0){
                         System.out.println("\t\n\nTrying to see future......");
+                        System.out.println(dat+"/"+mon+"/"+year+" and today "+today.get(Calendar.DATE)+"/"+today.get(Calendar.MONTH)+"/"+today.get(Calendar.YEAR));
                         publishProgress(0,4);
                         return null;
                     }
@@ -170,6 +192,7 @@ public class Tracker extends AppCompatActivity {
                     String tableName = getTableName(month + 1);
                     try {
                         Cursor res = db.rawQuery("select * from " + tableName + " where Day = " + dayOfMonth, null);
+                        if(res.getCount() == 0) throw new Exception();
                     }
                     catch (Exception e){
                         System.out.println("Creating table...");
@@ -201,9 +224,9 @@ public class Tracker extends AppCompatActivity {
 
                 SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
 
-                Date date = dt;
+                Calendar date = dt;
 
-                Date today = new Date();
+                Calendar today = Calendar.getInstance();
 
                 if(today.compareTo(dt) == -1){
                     //Future setting??
@@ -214,9 +237,9 @@ public class Tracker extends AppCompatActivity {
                     return null;
                 }
 
-                System.out.println(date.getDate());
-                String tableName = getTableName(date.getMonth()+1);
-                db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.getDate()+""});
+                System.out.println(date.get(Calendar.DATE));
+                String tableName = getTableName(date.get(Calendar.MONTH)+1);
+                db.execSQL("update "+tableName+" set Count = ? where Day = ?",new String[]{count+"",date.get(Calendar.DATE)+""});
 
                 publishProgress(1,3,view);
                 publishProgress(1,4,d);
@@ -230,9 +253,9 @@ public class Tracker extends AppCompatActivity {
             //If database/new month's table not created
             else if(m==99){
                 SQLiteDatabase db = openOrCreateDatabase("data",MODE_PRIVATE,null);
-                Date today = dt;
-                int monthno = today.getMonth()+1;
-                String tableName = today.getYear()+"";
+                Calendar today = dt;
+                int monthno = today.get(Calendar.MONTH)+1;
+                String tableName = today.get(Calendar.YEAR)+"";
                 tableName = tableName.substring(2);
                 int maxdays = 31;
                 switch (monthno){
@@ -287,6 +310,7 @@ public class Tracker extends AppCompatActivity {
                 for(int i=1;i<=maxdays;i++){
                     db.execSQL("INSERT INTO "+tableName+" VALUES("+i+",0)");
                 }
+                //db.execSQL("INSERT INTO "+tableName+" VALUES("+28+",0)");
             }
             return null;
         }

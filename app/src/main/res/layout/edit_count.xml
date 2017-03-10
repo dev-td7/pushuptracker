@@ -2,8 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/countColor"
+    android:layout_height="match_parent"
     android:paddingTop="20dp"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
@@ -13,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:text="Register today's count"
-        android:background="@color/countColor"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:layout_marginBottom="10dp"
         android:gravity="center"
         android:textSize="20sp"/>
@@ -25,7 +23,6 @@
         android:hint="Count"
         android:gravity="center"
         android:inputType="numberDecimal"
-        android:background="@color/colorAccent"
         android:textColor="@android:color/black"
         android:textSize="20sp"
         android:ems="10"
@@ -35,11 +32,11 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorAccent"
         android:layout_marginTop="10dp"
         android:text="Register"
         android:textSize="18sp"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:id="@+id/reg"/>
 
 </LinearLayout>

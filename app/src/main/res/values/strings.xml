@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Push ups Tracker</string>
     <string name="action_settings">Settings</string>
-    <string name="statbtnstr"><![CDATA[Show this week\'s statistics -->]]></string>
+    <string name="stat_week"><![CDATA[Weekly stats]]></string>
 </resources>

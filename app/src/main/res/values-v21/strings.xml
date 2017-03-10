@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="statbtnstr"><![CDATA[Show this week\'s statistics -->]]></string>
+    <string name="stat_week"><![CDATA[Show this week\'s statistics -->]]></string>
 </resources>

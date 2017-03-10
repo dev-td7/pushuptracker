@@ -19,10 +19,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".Stats"
-            android:label="@string/app_name"
+            android:label="Your week's statistics"
             android:theme="@style/TrackTheme.ActionBar">
 
         </activity>
+        <activity android:name=".Stats_Monthly"
+            android:label="Your month's statistics"
+            android:theme="@style/TrackTheme.ActionBar">
+
+        </activity>
+        <service android:name=".NotifierService"
+            android:enabled="true"/>
     </application>
 
 </manifest>
